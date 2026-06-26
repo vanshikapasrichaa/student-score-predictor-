@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI/ML Score Predictor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f3f4f6; min-height: 100vh; display: flex; justify-content: center; padding: 2rem 1rem; }
+    .card { background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; padding: 2rem; max-width: 560px; width: 100%; height: fit-content; }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; color: #111827; }
+    .sub { font-size: 14px; color: #6b7280; margin-bottom: 28px; }
+    .group-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #9ca3af; margin-bottom: 12px; margin-top: 24px; }
+    .slider-row { margin-bottom: 14px; }
+    .slider-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .slider-top label { font-size: 14px; color: #374151; }
+    .slider-val { font-size: 14px; font-weight: 600; color: #3b82f6; }
+    input[type=range] { width: 100%; accent-color: #3b82f6; cursor: pointer; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+    .drop-wrap { display: flex; flex-direction: column; gap: 5px; }
+    .drop-wrap label { font-size: 13px; color: #6b7280; }
+    select { font-size: 13px; padding: 7px 10px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; color: #111827; cursor: pointer; }
+    .result { margin-top: 28px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 14px; padding: 1.25rem 1.5rem; }
+    .result-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px; }
+    .result-label { font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+    .score-num { font-size: 48px; font-weight: 700; line-height: 1; color: #111827; }
+    .score-of { font-size: 16px; font-weight: 400; color: #9ca3af; }
+    .pill { font-size: 13px; font-weight: 600; padding: 5px 14px; border-radius: 20px; }
+    .bar-bg { height: 7px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width 0.35s ease, background 0.35s ease; }
+    .breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .b-item { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 12px; }
+    .b-name { font-size: 12px; color: #9ca3af; margin-bottom: 2px; }
+    .b-pts { font-size: 13px; font-weight: 600; }
+    .divider { height: 1px; background: #e5e7eb; margin-bottom: 14px; }
+    .tip { font-size: 13px; color: #6b7280; line-height: 1.6; }
+    .tip strong { color: #111827; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>AI/ML score predictor</h1>
+  <p class="sub">Adjust your inputs to estimate your final exam score.</p>
+
+  <p class="group-label">Study habits</p>
+
+  <div class="slider-row">
+    <div class="slider-top"><label>Hours studied / week</label><span class="slider-val" id="v-hours">12 hrs</span></div>
+    <input type="range" min="0" max="40" step="1" value="12" oninput="update('hours',this.value)">
+  </div>
+  <div class="slider-row">
+    <div class="slider-top"><label>Assignments completed</label><span class="slider-val" id="v-assign">75%</span></div>
+    <input type="range" min="0" max="100" step="1" value="75" oninput="update('assign',this.value)">
+  </div>
+  <div class="slider-row">
+    <div class="slider-top"><label>Practice problems solved</label><span class="slider-val" id="v-practice">30</span></div>
+    <input type="range" min="0" max="100" step="1" value="30" oninput="update('practice',this.value)">
+  </div>
+
+  <p class="group-label">Coursework</p>
+
+  <div class="slider-row">
+    <div class="slider-top"><label>Midterm score</label><span class="slider-val" id="v-mid">62/100</span></div>
+    <input type="range" min="0" max="100" step="1" value="62" oninput="update('mid',this.value)">
+  </div>
+  <div class="slider-row">
+    <div class="slider-top"><label>Quiz average</label><span class="slider-val" id="v-quiz">68/100</span></div>
+    <input type="range" min="0" max="100" step="1" value="68" oninput="update('quiz',this.value)">
+  </div>
+  <div class="slider-row">
+    <div class="slider-top"><label>Lab / project score</label><span class="slider-val" id="v-lab">70/100</span></div>
+    <input type="range" min="0" max="100" step="1" value="70" oninput="update('lab',this.value)">
+  </div>
+
+  <div class="row2">
+    <div class="drop-wrap">
+      <label>Attendance</label>
+      <select onchange="update('attend',this.value)">
+        <option value="1">Rarely &lt; 50%</option>
+        <option value="2">Sometimes 50–70%</option>
+        <option value="3" selected>Usually 70–90%</option>
+        <option value="4">Always &gt; 90%</option>
+      </select>
+    </div>
+    <div class="drop-wrap">
+      <label>Prior ML background</label>
+      <select onchange="update('bg',this.value)">
+        <option value="0">None</option>
+        <option value="1" selected>Some exposure</option>
+        <option value="2">Solid basics</option>
+        <option value="3">Strong background</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="result">
+    <div class="result-row">
+      <div>
+        <p class="result-label">Predicted score</p>
+        <p class="score-num" id="score-num">--<span class="score-of"> / 100</span></p>
+      </div>
+      <span class="pill" id="grade-pill"></span>
+    </div>
+    <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
+    <div class="breakdown" id="breakdown"></div>
+    <div class="divider"></div>
+    <p class="tip" id="tip"></p>
+  </div>
+</div>
+
+<script>
+  const state = { hours:12, assign:75, practice:30, mid:62, quiz:68, lab:70, attend:3, bg:1 };
+  const units = { hours:" hrs", assign:"%", mid:"/100", quiz:"/100", lab:"/100", practice:"" };
+
+  function update(key, val) {
+    state[key] = +val;
+    if (units[key] !== undefined) document.getElementById("v-"+key).textContent = val + units[key];
+    render();
+  }
+
+  function render() {
+    const { hours, assign, practice, mid, quiz, lab, attend, bg } = state;
+    const score = Math.min(100, Math.max(0, Math.round(
+      mid*0.30 + quiz*0.20 + lab*0.25 +
+      Math.min(hours/40,1)*12 + (assign/100)*10 +
+      Math.min(practice/100,1)*8 + (attend-1)*3 + bg*2.5
+    )));
+
+    document.getElementById("score-num").innerHTML = score + '<span class="score-of"> / 100</span>';
+
+    const barEl = document.getElementById("bar");
+    barEl.style.width = score + "%";
+    barEl.style.background = score>=75 ? "#16a34a" : score>=55 ? "#d97706" : "#dc2626";
+
+    const grades = [[90,"A","#15803d","#dcfce7"],[80,"B","#1d4ed8","#dbeafe"],[70,"C","#b45309","#fef3c7"],[55,"D","#c2410c","#ffedd5"],[0,"F","#b91c1c","#fee2e2"]];
+    const [,letter,color,bgc] = grades.find(([min]) => score >= min);
+    const pill = document.getElementById("grade-pill");
+    pill.textContent = "Grade " + letter;
+    pill.style.color = color;
+    pill.style.background = bgc;
+
+    const factors = [
+      ["Midterm (30%)", Math.round(mid*0.30), 30],
+      ["Quizzes (20%)", Math.round(quiz*0.20), 20],
+      ["Labs (25%)",    Math.round(lab*0.25),  25],
+      ["Study bonus",  Math.round(Math.min(hours/40,1)*12), 12],
+      ["Assignments",  Math.round((assign/100)*10), 10],
+      ["Practice",     Math.round(Math.min(practice/100,1)*8), 8],
+    ];
+    document.getElementById("breakdown").innerHTML = factors.map(([name,pts,max]) => {
+      const c = pts/max>=0.7 ? "#16a34a" : pts/max>=0.4 ? "#6b7280" : "#dc2626";
+      return `<div class="b-item"><p class="b-name">${name}</p><p class="b-pts" style="color:${c}">${pts} / ${max}</p></div>`;
+    }).join("");
+
+    const tips = [
+      [hours < 10,    "Study at least 10 hrs/week — consistency beats cramming."],
+      [assign < 80,   "Finish more assignments; they're the best way to catch gaps early."],
+      [practice < 40, "More practice problems = stronger ML intuition. Aim for 40+."],
+      [attend == 1,   "Attendance has a real effect — try showing up more often."],
+      [mid < 55,      "The final revisits midterm topics heavily. Go back and review those."],
+      [true,          "You're in good shape. Stay consistent and review weak spots before the exam."],
+    ];
+    const msg = tips.find(([cond]) => cond)[1];
+    document.getElementById("tip").innerHTML = "<strong>Tip</strong>  " + msg;
+  }
+
+  render();
+</script>
+</body>
+</html>
